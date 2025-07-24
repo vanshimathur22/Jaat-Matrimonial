@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const Profile = require("../models/profile");
+const Profile = require('../models/Profile');
+
 
 // Create a new profile
 router.post("/", async (req, res) => {
