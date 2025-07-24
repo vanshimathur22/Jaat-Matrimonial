@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jaat Matrimonial - Profiles</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    label { margin-right: 10px; }
+    input, select { margin-right: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Jaat Matrimonial Profiles</h1>
+
+  <div>
+    <label>
+      Min Age:
+      <input type="number" id="minAge" min="18" max="100" />
+    </label>
+
+    <label>
+      Max Age:
+      <input type="number" id="maxAge" min="18" max="100" />
+    </label>
+
+    <label>
+      Gender:
+      <select id="genderFilter">
+        <option value="">All</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+    </label>
+
+    <label>
+      Hometown:
+      <input type="text" id="hometownFilter" placeholder="Type hometown" />
+    </label>
+
+    <button id="filterBtn">Filter</button>
+    <button id="resetBtn">Reset</button>
+  </div>
+
+  <table id="profilesTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Gender</th>
+        <th>Education</th>
+        <th>Hometown</th>
+        <th>Income</th>
+        <th>Assets</th>
+        <th>Preferences</th>
+        <th>Height (cm)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const profilesTableBody = document.querySelector("#profilesTable tbody");
+    const minAgeInput = document.getElementById("minAge");
+    const maxAgeInput = document.getElementById("maxAge");
+    const genderFilter = document.getElementById("genderFilter");
+    const hometownFilter = document.getElementById("hometownFilter");
+    const filterBtn = document.getElementById("filterBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    // Calculate age from DOB string
+    function calculateAge(dob) {
+      if (!dob) return null;
+      const birthDate = new Date(dob);
+      const diffMs = Date.now() - birthDate.getTime();
+      const ageDt = new Date(diffMs);
+      return Math.abs(ageDt.getUTCFullYear() - 1970);
+    }
+
+    // Fetch and display profiles
+    async function fetchAndDisplayProfiles() {
+      try {
+        const res = await fetch("/profiles");
+        const profiles = await res.json();
+
+        // Apply filters
+        const filtered = profiles.filter(profile => {
+          const age = calculateAge(profile.dob);
+
+          if (minAgeInput.value && (!age || age < Number(minAgeInput.value))) return false;
+          if (maxAgeInput.value && (!age || age > Number(maxAgeInput.value))) return false;
+
+          if (genderFilter.value && profile.gender !== genderFilter.value) return false;
+
+          if (hometownFilter.value && profile.hometown) {
+            if (!profile.hometown.toLowerCase().includes(hometownFilter.value.toLowerCase())) return false;
+          } else if (hometownFilter.value) {
+            return false;
+          }
+
+          return true;
+        });
+
+        profilesTableBody.innerHTML = "";
+
+        if (filtered.length === 0) {
+          profilesTableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;">No profiles found</td></tr>`;
+          return;
+        }
+
+        filtered.forEach(profile => {
+          const age = calculateAge(profile.dob) || "N/A";
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${profile.name || ""}</td>
+            <td>${age}</td>
+            <td>${profile.gender || ""}</td>
+            <td>${profile.education || ""}</td>
+            <td>${profile.hometown || ""}</td>
+            <td>${profile.income || ""}</td>
+            <td>${profile.assets || ""}</td>
+            <td>${profile.preferences || ""}</td>
+            <td>${profile.height || ""}</td>
+          `;
+          profilesTableBody.appendChild(tr);
+        });
+
+      } catch (error) {
+        profilesTableBody.innerHTML = `<tr><td colspan="9" style="color:red; text-align:center;">Failed to load profiles</td></tr>`;
+        console.error(error);
+      }
+    }
+
+    filterBtn.addEventListener("click", fetchAndDisplayProfiles);
+
+    resetBtn.addEventListener("click", () => {
+      minAgeInput.value = "";
+      maxAgeInput.value = "";
+      genderFilter.value = "";
+      hometownFilter.value = "";
+      fetchAndDisplayProfiles();
+    });
+
+    // Initial load
+    fetchAndDisplayProfiles();
+  </script>
+</body>
+</html>
