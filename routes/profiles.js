@@ -1,50 +1,66 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const Profile = require('../models/Profile');
+const Profile = require('../models/profile'); // Ensure capital P in file name!
 
-
-// Create a new profile
-router.post("/", async (req, res) => {
-  try {
-    const profile = new Profile(req.body);
-    await profile.save();
-    res.json({ message: "Profile created successfully" });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to create profile" });
-  }
-});
-
-// Get all profiles
-router.get("/", async (req, res) => {
+// GET all profiles
+router.get('/', async (req, res) => {
   try {
     const profiles = await Profile.find();
     res.json(profiles);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch profiles" });
+    res.status(500).json({ message: 'Error fetching profiles', error: err });
   }
 });
 
-// Delete a profile
-router.delete("/:id", async (req, res) => {
+// POST new profile
+router.post('/', async (req, res) => {
   try {
-    await Profile.findByIdAndDelete(req.params.id);
-    res.json({ message: "Profile deleted successfully" });
+    const {
+      name,
+      dob,
+      gender,
+      education,
+      hometown,
+      address,
+      income,
+      assets,
+      preferences,
+      height
+    } = req.body;
+
+    // Validate required fields
+    if (!name || !gender) {
+      return res.status(400).json({ message: 'Name and gender are required.' });
+    }
+
+    const newProfile = new Profile({
+      name,
+      dob,
+      gender,
+      education,
+      hometown,
+      address,
+      income,
+      assets,
+      preferences,
+      height
+    });
+
+    const savedProfile = await newProfile.save();
+    res.json({ message: 'Profile created successfully', profile: savedProfile });
   } catch (err) {
-    res.status(500).json({ error: "Failed to delete profile" });
+    res.status(500).json({ message: 'Error creating profile', error: err });
   }
 });
 
-// Update a profile
-router.put("/:id", async (req, res) => {
+// DELETE a profile by ID
+router.delete('/:id', async (req, res) => {
   try {
-    const updatedProfile = await Profile.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    res.json({ message: "Profile updated successfully", profile: updatedProfile });
+    const profileId = req.params.id;
+    await Profile.findByIdAndDelete(profileId);
+    res.json({ message: 'Profile deleted successfully' });
   } catch (err) {
-    res.status(500).json({ error: "Failed to update profile" });
+    res.status(500).json({ message: 'Error deleting profile', error: err });
   }
 });
 

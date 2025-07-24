@@ -1,28 +1,28 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const path = require("path");
-const bodyParser = require("body-parser");
+require('dotenv').config();
+
+const express = require('express');
+const mongoose = require('mongoose');
+const path = require('path');
+const cors = require('cors');
 
 const app = express();
 const PORT = 5050;
 
 // Middleware
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public")));
-
-// Connect to MongoDB
-mongoose.connect("mongodb+srv://vanshimathur22:ASDFghJKL90()@jaatmatrimonial-cluster.dzdqpam.mongodb.net/?retryWrites=true&w=majority&appName=JaatMatrimonial-cluster", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("MongoDB connected"))
-.catch((err) => console.error("MongoDB connection error:", err));
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
-const profileRoutes = require("./routes/profiles");
-app.use("/profiles", profileRoutes);
+const profileRoutes = require('./routes/profiles');
+app.use('/api/profiles', profileRoutes);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// MongoDB Connection
+const mongoURI = process.env.MONGO_URI;
+
+mongoose.connect(mongoURI)
+  .then(() => {
+    console.log(`✅ MongoDB connected`);
+    app.listen(PORT, () => console.log(`🚀 Server started on port ${PORT}`));
+  })
+  .catch(err => console.error('❌ MongoDB connection error:', err));
