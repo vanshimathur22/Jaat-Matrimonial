@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Profile = require('../models/profile'); // Ensure capital P in file name!
+const Profile = require('../models/profile');
 
 // GET all profiles
 router.get('/', async (req, res) => {
@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
     const profiles = await Profile.find();
     res.json(profiles);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching profiles', error: err });
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

@@ -15,7 +15,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 const profileRoutes = require('./routes/profiles');
-app.use('/api/profiles', profileRoutes);
+app.use('/profiles', profileRoutes);
 
 // MongoDB Connection
 const mongoURI = process.env.MONGO_URI;
